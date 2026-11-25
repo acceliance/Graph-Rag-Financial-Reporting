@@ -1,0 +1,36 @@
+# Public annual reports to download with scripts/fetch-reports.ps1 or scripts/fetch-reports.sh.
+# One report per line. Lines starting with # are ignored. No comma inside a field.
+#
+# file         name of the downloaded file: letters, digits, dot, dash, underscore, ending in .pdf
+# company      issuer name, as you want it listed
+# fiscal_year  year the report covers, e.g. 2025
+# report_type  annual-report, urd, 10-k, half-year...
+# framework    IFRS, US-GAAP...
+# language     en, fr...
+# currency     reporting currency, ISO code
+# url          direct https link to the PDF on the issuer's or the regulator's own site
+# sha256       checksum of the file; leave empty on a new line, the script prints the value to paste
+#
+# Example (not a real address):
+# acme-2025-annual-report.pdf,Acme Group,2025,annual-report,IFRS,en,EUR,https://www.example.com/investors/acme-annual-report-2025.pdf,
+#
+# European airlines. fiscal_year is the year in which the financial year ends:
+# Ryanair's ends on 31 March, easyJet's on 30 September, the others on 31 December.
+# afklm-2024-urd.pdf (532 pages, 48 MB) and afklm-2025-urd.pdf (536 pages) exceed the default
+# page limit: set GRAPHRAG_MAX_PAGES=600 in .env before uploading them.
+file,company,fiscal_year,report_type,framework,language,currency,url,sha256
+afklm-2023-urd.pdf,Air France-KLM,2023,urd,IFRS,en,EUR,https://www.airfranceklm.com/sites/default/files/2024-04/af_urd_2023_uk_vmel2_260424.pdf,119b6576a7550a4a41244dc121f132f4140dd2b42a76ca746862a89c71853063
+afklm-2024-urd.pdf,Air France-KLM,2024,urd,IFRS,en,EUR,https://www.airfranceklm.com/sites/default/files/2025-04/2024_urd_ven_04032025.pdf,be47a58faf2376a4fa90b80227f8e3429bdb330f52e8c6e313421e4eeccd2a5b
+afklm-2025-urd.pdf,Air France-KLM,2025,urd,IFRS,en,EUR,https://www.airfranceklm.com/sites/default/files/2026-03/urd-2025-veng.pdf,8a03365ab55f0d7fcdb882152dfe64e37ff3f304fdae14597a9e583e6e21e136
+lufthansa-2023-annual-report.pdf,Lufthansa Group,2023,annual-report,IFRS,en,EUR,https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/annual-reports/LH-AR-2023-e.pdf,a8acfc66dd558694b33c91660596d79ddc4075d349b44eefd7ccc5d919e056e3
+lufthansa-2024-annual-report.pdf,Lufthansa Group,2024,annual-report,IFRS,en,EUR,https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/annual-reports/LH-AR-2024-e.pdf,52189b83e36819bc9e20871d6b09c35d0b3800a977f06d2819d482df1783ecaa
+lufthansa-2025-annual-report.pdf,Lufthansa Group,2025,annual-report,IFRS,en,EUR,https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/annual-reports/LH-AR-2025-e.pdf,d39c75b65e16f7c8d4f74741837e76c390f9cdc3d947e06b5e0642156191f369
+iag-2023-annual-report.pdf,International Airlines Group,2023,annual-report,IFRS,en,EUR,https://www.iairgroup.com/media/ssuhidf1/iag-annual-report-and-accounts-2023.pdf,a1e2783cad155d2779a117da12a2a2826b0cd3cdc19f18f093f590db6c134c51
+iag-2024-annual-report.pdf,International Airlines Group,2024,annual-report,IFRS,en,EUR,https://www.iairgroup.com/media/4qxgaavc/iag-annual-report-and-accounts-2024.pdf,71318e48438904396b8d5cc59d01db85615d44b297fc7e59271a72e2211d8a77
+iag-2025-annual-report.pdf,International Airlines Group,2025,annual-report,IFRS,en,EUR,https://www.iairgroup.com/media/ktnlp1jx/iag-annual-report-and-accounts-2025.pdf,876d0b0df9b1ee792437f268bb5bcd17cfbf180cea17a663115c7551a288397b
+ryanair-2023-annual-report.pdf,Ryanair Holdings,2023,annual-report,IFRS,en,EUR,https://investor.ryanair.com/wp-content/uploads/2023/07/Ryanair-2023-Annual-Report.pdf,1d0b14ac47cba68ff22202a9cc9eda3fa8cc859fbe2a0462d106cb4cd658ca88
+ryanair-2024-annual-report.pdf,Ryanair Holdings,2024,annual-report,IFRS,en,EUR,https://investor.ryanair.com/wp-content/uploads/2024/06/Ryanair-2024-Annual-Report.pdf,095ce7eaddfcd69c8f15e91ef4a5bee7700981c8c377f58e1e211ee6855cf845
+ryanair-2025-annual-report.pdf,Ryanair Holdings,2025,annual-report,IFRS,en,EUR,https://investor.ryanair.com/wp-content/uploads/2025/05/Ryanair-2025-Annual-Report.pdf,e007f5af975996dad15cf02320021c0fa375267a97a2bed5821d5975d2b0261f
+easyjet-2023-annual-report.pdf,easyJet,2023,annual-report,IFRS,en,GBP,https://corporate.easyjet.com/files/doc_financials/2023/ar/43627_easyJet_Annual-Report_Web.pdf,52872fb728b53b9e6964d5a575e1d6b7a273aad1de26b107faa5fcde75d3e10b
+easyjet-2024-annual-report.pdf,easyJet,2024,annual-report,IFRS,en,GBP,https://corporate.easyjet.com/files/doc_downloads/2024/12/easyJet_AR24_web.pdf,a85c048e391c662546c30395f37e5639c601118cc4e4fa34c5c6cbfb45c80a68
+easyjet-2025-annual-report.pdf,easyJet,2025,annual-report,IFRS,en,GBP,https://s203.q4cdn.com/522538739/files/doc_financials/2025/ar/easyJetARA25_DIGITAL_sm.pdf,41bd505ed95d3e4e8daa480cbb57bbf0445eefb0071278f0e8427fa084f9dad0

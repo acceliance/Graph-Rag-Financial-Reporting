@@ -1,0 +1,3159 @@
+{
+  "$schema": "https://raw.githubusercontent.com/acceliance/Graph-Rag-Deploy/main/schemas/schema_uml_model.json",
+  "modelStereotypes": [
+    {
+      "name": "GraphRagEntity",
+      "moduleName": "GraphRag",
+      "description": "Graph-RAG settings of a class: match strategy, relevance anchor, extraction hints and group.",
+      "stereotypeProperties": [
+        {
+          "name": "graphRagMatch",
+          "type": "ENUMERATE",
+          "description": "exact | fuzzy: how an extracted instance is matched to existing entities"
+        },
+        {
+          "name": "graphRagFuzzyThreshold",
+          "type": "FLOAT",
+          "description": "Score (0-1) at or above which a fuzzy match merges automatically; empty = 0.92"
+        },
+        {
+          "name": "graphRagReviewBand",
+          "type": "FLOAT",
+          "description": "Score (0-1) at or above which, below the threshold, a pair goes to review; empty = 0.75"
+        },
+        {
+          "name": "graphRagAnchor",
+          "type": "ENUMERATE",
+          "description": "auto | true | false: whether the relevance gate uses this class; auto = when identified"
+        },
+        {
+          "name": "graphRagExtractionHints",
+          "type": "TEXT",
+          "description": "Free text appended to the extraction prompt: labels, formats, where values appear"
+        },
+        {
+          "name": "graphRagGroup",
+          "type": "STRING",
+          "description": "Extraction group; empty = the class's domain"
+        }
+      ]
+    },
+    {
+      "name": "GraphRagIdentity",
+      "moduleName": "GraphRag",
+      "description": "The attribute is part of the class's identity key.",
+      "stereotypeProperties": [
+        {
+          "name": "graphRagIdentityOrder",
+          "type": "INTEGER",
+          "description": "Position in a composite identity key (1-based); empty = declaration order"
+        },
+        {
+          "name": "graphRagNormalise",
+          "type": "ENUMERATE",
+          "description": "trim | casefold | digits | date | amount | none; empty = the default of the type"
+        }
+      ]
+    },
+    {
+      "name": "GraphRagEmbed",
+      "moduleName": "GraphRag",
+      "description": "The String attribute is indexed on its own in the vector store.",
+      "stereotypeProperties": []
+    }
+  ],
+  "classes": [
+    {
+      "name": "ReportingEntity",
+      "domain": "Statements",
+      "description": "The group or company that publishes financial reports: the parent of the consolidated group. One node per group, shared by all its reports.",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "String",
+          "description": "Short commercial name of the group as on the cover of its reports, without legal form (Lufthansa Group, easyJet)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "legalName",
+          "type": "String",
+          "description": "Legal name of the parent company with its legal form (Deutsche Lufthansa AG, easyJet plc, Air France-KLM S.A.)",
+          "nullable": true
+        },
+        {
+          "name": "countryOfIncorporation",
+          "type": "String",
+          "description": "Country where the parent company is incorporated",
+          "nullable": true
+        },
+        {
+          "name": "headOffice",
+          "type": "String",
+          "description": "City of the registered or head office",
+          "nullable": true
+        },
+        {
+          "name": "stockExchanges",
+          "type": "String",
+          "description": "Stock exchanges where the shares are listed, as written",
+          "nullable": true
+        },
+        {
+          "name": "tickerSymbol",
+          "type": "String",
+          "description": "Ticker of the share (LHA, IAG, RYA, EZJ, AF)",
+          "nullable": true
+        },
+        {
+          "name": "lei",
+          "type": "String",
+          "description": "Legal Entity Identifier, 20 characters, when printed",
+          "nullable": true
+        },
+        {
+          "name": "sector",
+          "type": "String",
+          "description": "Sector of activity as the group describes it",
+          "nullable": true
+        },
+        {
+          "name": "businessDescription",
+          "type": "String",
+          "description": "What the group does: activities, brands, markets, business model, as summarised in the report",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagMatch",
+              "valueAsString": "fuzzy"
+            },
+            {
+              "stereotypeProperty": "graphRagFuzzyThreshold",
+              "valueAsString": "0.92"
+            },
+            {
+              "stereotypeProperty": "graphRagReviewBand",
+              "valueAsString": "0.80"
+            },
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "true"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Exactly one ReportingEntity per report: the group whose consolidated statements are presented. Its name is on the cover; the legal name, registered office and listing are in the general information or 'corporate information' note and on the last pages. Subsidiaries, joint ventures and other companies are GroupCompany, not ReportingEntity. Competitors and suppliers are not extracted."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "statements"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auditor",
+      "domain": "Narrative",
+      "description": "The audit firm that signs the auditor's report on the financial statements.",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "String",
+          "description": "Name of the audit firm as it signs the report (KPMG, PricewaterhouseCoopers, EY, Deloitte, Forvis Mazars)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "office",
+          "type": "String",
+          "description": "City of the signing office",
+          "nullable": true
+        }
+      ],
+      "relations": [],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagMatch",
+              "valueAsString": "fuzzy"
+            },
+            {
+              "stereotypeProperty": "graphRagFuzzyThreshold",
+              "valueAsString": "0.92"
+            },
+            {
+              "stereotypeProperty": "graphRagReviewBand",
+              "valueAsString": "0.80"
+            },
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "The firm, not the signing partner. It is named at the end of the independent auditor's report ('Independent auditor's report', 'Statutory auditors' report', 'Bestätigungsvermerk'). A French group has two statutory auditors: one entity each."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "narrative"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FinancialReport",
+      "domain": "Statements",
+      "description": "One published report of a group for one financial period: annual report, universal registration document, half-year report. Each PDF is one FinancialReport.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group as on the cover, without legal form; the same value as ReportingEntity.name",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year covered ends (2025); for a half-year report, the year followed by -H1 (2025-H1)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "description": "Title on the cover (Annual Report and Accounts 2025, Universal Registration Document 2025)",
+          "nullable": true
+        },
+        {
+          "name": "periodStartDate",
+          "type": "Date",
+          "description": "First day of the financial period covered",
+          "nullable": true
+        },
+        {
+          "name": "periodEndDate",
+          "type": "Date",
+          "description": "Last day of the financial period covered: the balance sheet date (31 December 2025, 31 March 2025, 30 September 2025)",
+          "nullable": true
+        },
+        {
+          "name": "publicationDate",
+          "type": "Date",
+          "description": "Date of publication or of approval of the statements by the board",
+          "nullable": true
+        },
+        {
+          "name": "reportingCurrency",
+          "type": "String",
+          "description": "ISO 4217 code of the presentation currency of the consolidated statements",
+          "nullable": true
+        },
+        {
+          "name": "language",
+          "type": "String",
+          "description": "Language of the document (en, fr, de)",
+          "nullable": true
+        },
+        {
+          "name": "isTranslation",
+          "type": "Boolean",
+          "description": "True when the document says it is a translation of an original in another language",
+          "nullable": true
+        },
+        {
+          "name": "filingReference",
+          "type": "String",
+          "description": "Filing number given by the regulator, when printed (AMF filing number of a universal registration document)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "reportingEntity",
+          "target": "ReportingEntity",
+          "cardinality": "ManyToOne",
+          "description": "The group that publishes the report"
+        },
+        {
+          "name": "auditors",
+          "target": "Auditor",
+          "cardinality": "ManyToMany",
+          "description": "The audit firms that sign the auditor's report on these statements"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "reportType",
+          "target": "ReportType",
+          "description": "Kind of report"
+        },
+        {
+          "name": "accountingFramework",
+          "target": "AccountingFramework",
+          "description": "Accounting standards of the consolidated statements"
+        },
+        {
+          "name": "auditOpinion",
+          "target": "AuditOpinion",
+          "description": "Opinion of the auditors on the consolidated statements"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "true"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Exactly one FinancialReport per PDF: the document being read. Title and year are on the cover; the period dates head the primary statements ('for the year ended 31 March 2025'); the accounting framework is in the basis of preparation note; the opinion is in the auditor's report. Reports of earlier years and other documents the text refers to are NOT extracted as FinancialReport."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "statements"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Segment",
+      "domain": "Statements",
+      "description": "A reportable segment of a group under IFRS 8: a business segment or a geographical area for which the group publishes figures.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group, the same value as on its reports",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "description": "Name of the segment as printed in the segment note (Passenger Airlines, Network, Maintenance, Transavia, Logistics)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "What the segment covers: activities, brands, entities",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "name": "reportingEntity",
+          "target": "ReportingEntity",
+          "cardinality": "ManyToOne",
+          "description": "The group the segment belongs to"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "segmentType",
+          "target": "SegmentType",
+          "description": "Business segment or geographical area"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Segments are listed in the segment reporting note ('Segment information', 'Information sectorielle', 'Segmentberichterstattung') and in the business review. Use the name of the segment note, not a brand name inside it. 'Group', 'Total', 'Eliminations', 'Reconciliation' and 'Other' columns are not segments. A group with a single segment has none."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "statements"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ReportedValue",
+      "domain": "Statements",
+      "description": "One figure as one report states it: a measure, for a period, for the group or one segment. The same measure of the same period stated again in a later report (a comparative, possibly restated) is another ReportedValue, attached to that later report.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Measure as printed, period and scope, separated by ' | ' (Revenue | 2024 | Group; Operating result | 2025 | Maintenance; Net debt | 31 Dec 2025 | Group)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "metricAsPrinted",
+          "type": "String",
+          "description": "Caption of the line exactly as printed (Total revenue, Adjusted EBIT, Profit after tax)",
+          "nullable": true
+        },
+        {
+          "name": "period",
+          "type": "String",
+          "description": "Period or date of the figure as printed in the column header (2025, 2024, 31 Mar 2025, FY25)",
+          "nullable": true
+        },
+        {
+          "name": "periodEndDate",
+          "type": "Date",
+          "description": "Last day of the period of the figure, or the balance sheet date for a position",
+          "nullable": true
+        },
+        {
+          "name": "amount",
+          "type": "Double",
+          "description": "The figure (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        },
+        {
+          "name": "unit",
+          "type": "String",
+          "description": "Unit of a figure that is not money (%, x, employees, passengers in thousands, ASK in millions, aircraft)",
+          "nullable": true
+        },
+        {
+          "name": "isComparative",
+          "type": "Boolean",
+          "description": "True when the figure is for a period earlier than the one the report covers, shown for comparison",
+          "nullable": true
+        },
+        {
+          "name": "isRestated",
+          "type": "Boolean",
+          "description": "True when the column or line is marked restated, adjusted or re-presented ('restated', 'retraité', 'angepasst')",
+          "nullable": true
+        },
+        {
+          "name": "restatementNote",
+          "type": "String",
+          "description": "Reason given for the restatement, or the note it refers to",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        },
+        {
+          "name": "segment",
+          "target": "Segment",
+          "cardinality": "ManyToOne",
+          "description": "The segment the figure is for; none for a group figure"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "standardMetric",
+          "target": "StandardMetric",
+          "description": "The measure in a common vocabulary, so that figures of different groups can be compared",
+          "nullable": false
+        },
+        {
+          "name": "valueKind",
+          "target": "ValueKind",
+          "description": "What kind of number the figure is"
+        },
+        {
+          "name": "statement",
+          "target": "StatementKind",
+          "description": "Where the figure is printed"
+        },
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "true"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Extract the headline figures, not every cell: the key figures table, the main lines and totals of the income statement, balance sheet and cash flow statement, the segment note (revenue and result per segment), net debt and its components, and the operating indicators of the business (for an airline: passengers, capacity in ASK, load factor, fleet size). One entity per figure and per period: a line with two columns (2025 and 2024) gives two entities, the second with isComparative true. Copy the amount as printed and put the scale of the table header in 'scale'; never convert, sum or compute a figure. Choose standardMetric by meaning, not by wording ('Turnover', 'Revenue from ordinary activities' and 'Traffic revenue plus other revenue' totals are REVENUE); use OTHER when nothing fits and keep the caption in metricAsPrinted. A measure the group defines itself (adjusted, underlying, before exceptional items) takes the ADJUSTED literal when there is one. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "statements"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Borrowing",
+      "domain": "Financing",
+      "description": "One borrowing of the group as one report describes it: a bond issue, a bank loan, a credit facility, a state-backed loan, an aircraft financing.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Name of the borrowing as described, with amount, rate and maturity when given (EUR 500m 3.875% notes due 2029; Revolving credit facility 2023; State-guaranteed loan)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "borrower",
+          "type": "String",
+          "description": "Company of the group that borrows, when stated",
+          "nullable": true
+        },
+        {
+          "name": "nominalAmount",
+          "type": "Double",
+          "description": "Nominal or committed amount (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "drawnAmount",
+          "type": "Double",
+          "description": "Amount drawn or outstanding at the balance sheet date (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "carryingAmount",
+          "type": "Double",
+          "description": "Carrying amount in the balance sheet (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        },
+        {
+          "name": "couponRatePct",
+          "type": "Double",
+          "description": "Fixed interest or coupon rate in percent (3.875)",
+          "nullable": true
+        },
+        {
+          "name": "referenceRate",
+          "type": "String",
+          "description": "Floating rate basis and margin as written (Euribor 3M + 1.50%, SONIA + margin)",
+          "nullable": true
+        },
+        {
+          "name": "issueDate",
+          "type": "Date",
+          "description": "Date of issue or signature",
+          "nullable": true
+        },
+        {
+          "name": "maturityDate",
+          "type": "Date",
+          "description": "Final maturity date; the year alone when only the year is printed",
+          "nullable": true
+        },
+        {
+          "name": "isSecured",
+          "type": "Boolean",
+          "description": "True when the borrowing is secured on assets (aircraft, slots, shares)",
+          "nullable": true
+        },
+        {
+          "name": "security",
+          "type": "String",
+          "description": "Assets pledged or guarantees given for this borrowing",
+          "nullable": true
+        },
+        {
+          "name": "terms",
+          "type": "String",
+          "description": "Other terms as described: covenants, change-of-control clause, early redemption, conversion terms, sustainability-linked step-up",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "borrowingType",
+          "target": "BorrowingType",
+          "description": "Kind of borrowing"
+        },
+        {
+          "name": "interestRateType",
+          "target": "InterestRateType",
+          "description": "Fixed or floating rate"
+        },
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Borrowings are described in the notes on financial debt, borrowings or interest-bearing liabilities and in the liquidity section of the management report, often as a table of bond issues (issuer, amount, coupon, maturity). One entity per instrument named on its own; totals by category ('Bonds', 'Bank loans') are ReportedValue or DebtMaturity, not Borrowing. Leases are extracted only as the total lease liability (ReportedValue), not contract by contract. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "financing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Covenant",
+      "domain": "Financing",
+      "description": "A financial covenant or similar undertaking attached to the group's financing, with its required level and, when given, its level at the test date.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "The covenant and the financing it belongs to (Net debt / EBITDA - revolving credit facility; Minimum liquidity - state loan)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "definition",
+          "type": "String",
+          "description": "How the covenant is defined and calculated, as written",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "facility",
+          "type": "String",
+          "description": "The borrowing or facility the covenant belongs to, as named",
+          "nullable": true
+        },
+        {
+          "name": "requiredLevel",
+          "type": "String",
+          "description": "Required level as printed (not above 3.5x, at least EUR 1.5 billion)",
+          "nullable": true
+        },
+        {
+          "name": "requiredValue",
+          "type": "Double",
+          "description": "The number of the required level (3.5)",
+          "nullable": true
+        },
+        {
+          "name": "actualLevel",
+          "type": "String",
+          "description": "Level reached at the test date as printed",
+          "nullable": true
+        },
+        {
+          "name": "actualValue",
+          "type": "Double",
+          "description": "The number of the level reached",
+          "nullable": true
+        },
+        {
+          "name": "testDate",
+          "type": "Date",
+          "description": "Date at which the covenant is tested or was last tested",
+          "nullable": true
+        },
+        {
+          "name": "consequence",
+          "type": "String",
+          "description": "What a breach triggers: early repayment, step-up, waiver obtained",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "status",
+          "target": "CovenantStatus",
+          "description": "Whether the group states that the covenant was met"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Covenants are in the financial debt note, the liquidity risk note and the going-concern paragraph. Extract one only when a ratio or threshold is described; a sentence saying the financing 'contains customary covenants' or 'no financial covenants' is extracted once, with that sentence as definition and no values. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "financing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DebtMaturity",
+      "domain": "Financing",
+      "description": "One cell of the maturity schedule of financial liabilities: the amount of a kind of liability falling due in a time band.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Kind of liability and time band, separated by ' | ' (Bonds | 2027; Lease liabilities | within 1 year; Total financial debt | after 5 years)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "liabilityKind",
+          "type": "String",
+          "description": "Kind of liability of the row as printed (Bonds, Bank loans, Lease liabilities, Total)",
+          "nullable": true
+        },
+        {
+          "name": "timeBand",
+          "type": "String",
+          "description": "Time band of the column as printed (Within 1 year, 2027, 1 to 5 years, After 5 years)",
+          "nullable": true
+        },
+        {
+          "name": "balanceDate",
+          "type": "Date",
+          "description": "Balance sheet date of the schedule",
+          "nullable": true
+        },
+        {
+          "name": "amount",
+          "type": "Double",
+          "description": "Amount falling due in the band (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        },
+        {
+          "name": "isUndiscounted",
+          "type": "Boolean",
+          "description": "True when the table shows contractual undiscounted cash flows, interest included",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "The maturity schedule is a table of the liquidity risk note or of the financial debt note ('Maturity analysis', 'Échéancier', 'Fälligkeiten'). One entity per cell of the current year's table; the comparative table of the previous year is not extracted. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "financing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Commitment",
+      "domain": "Financing",
+      "description": "A commitment or contingent liability outside the balance sheet: firm orders of assets, capital commitments, guarantees given, assets pledged.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "What the commitment is (Firm aircraft orders Airbus A320neo family; Guarantees given to lessors; Capital commitments)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "The commitment as described: object, quantities, delivery or expiry schedule",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "counterparty",
+          "type": "String",
+          "description": "Supplier, beneficiary or counterparty, when named",
+          "nullable": true
+        },
+        {
+          "name": "amount",
+          "type": "Double",
+          "description": "Amount of the commitment (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        },
+        {
+          "name": "quantity",
+          "type": "Double",
+          "description": "Number of units committed, when the commitment is counted (aircraft on firm order)",
+          "nullable": true
+        },
+        {
+          "name": "schedule",
+          "type": "String",
+          "description": "When it falls due or is delivered, as written (2026 to 2031)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "commitmentType",
+          "target": "CommitmentType",
+          "description": "Kind of commitment"
+        },
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Commitments are in the notes 'Commitments', 'Contingent liabilities', 'Off-balance sheet commitments', 'Engagements hors bilan', and, for an airline, in the fleet section (order book). One entity per line of those tables or per commitment described. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "financing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provision",
+      "domain": "Financing",
+      "description": "A provision recognised in the balance sheet, with its movement over the year when the note gives it.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Name of the provision as printed (Provision for restitution of leased aircraft; Restructuring provision; Pension provisions)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "What the provision covers and how it is estimated",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "openingAmount",
+          "type": "Double",
+          "description": "Amount at the beginning of the period (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "additions",
+          "type": "Double",
+          "description": "Additions of the period (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "utilisations",
+          "type": "Double",
+          "description": "Amounts used in the period (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "reversals",
+          "type": "Double",
+          "description": "Unused amounts reversed in the period (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "closingAmount",
+          "type": "Double",
+          "description": "Amount at the end of the period (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "provisionType",
+          "target": "ProvisionType",
+          "description": "Kind of provision"
+        },
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Provisions are in the note 'Provisions' with a movement table (opening, additions, utilised, reversed, closing), and in the pension note. One entity per column or line of the movement table that names a provision; the total is a ReportedValue. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "financing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RiskFactor",
+      "domain": "Narrative",
+      "description": "A risk the group reports in its risk section, as one report describes it.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Title of the risk as printed (Fuel price volatility; Cyber attack; Air traffic control disruption)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "The risk as described: cause, exposure, possible effect",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "mitigation",
+          "type": "String",
+          "description": "What the group does about it: hedging, insurance, controls, plans",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "assessment",
+          "type": "String",
+          "description": "Rating of likelihood and impact as printed (high, medium; scale value)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "category",
+          "target": "RiskCategory",
+          "description": "Kind of risk"
+        },
+        {
+          "name": "trend",
+          "target": "RiskTrend",
+          "description": "How the report says the risk moved since the previous year"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Risks are in the chapter 'Risk factors', 'Principal risks and uncertainties', 'Facteurs de risques', 'Opportunities and risk report'. One entity per titled risk of that chapter; do not create risks from passing mentions elsewhere. Keep the title short and as printed, so that the same risk can be found again in the report of another year. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "narrative"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Litigation",
+      "domain": "Narrative",
+      "description": "A legal, tax or regulatory proceeding the group reports, as one report describes it.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Short name of the case (Air cargo cartel proceedings; State aid decision; Tax dispute Spain)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "The case as described: facts, claims, stage, expected outcome",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "counterparty",
+          "type": "String",
+          "description": "The other party or the authority (European Commission, tax authority, claimant)",
+          "nullable": true
+        },
+        {
+          "name": "jurisdiction",
+          "type": "String",
+          "description": "Country or court",
+          "nullable": true
+        },
+        {
+          "name": "amountClaimed",
+          "type": "Double",
+          "description": "Amount claimed or fine imposed (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "amountProvided",
+          "type": "Double",
+          "description": "Provision recognised for the case (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "status",
+          "target": "LitigationStatus",
+          "description": "Stage of the proceeding at the date of the report"
+        },
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Proceedings are in the notes 'Litigation', 'Contingent liabilities', 'Legal proceedings', 'Litiges'. One entity per case named. General statements that the group is party to ordinary proceedings are not extracted. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "narrative"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KeyAuditMatter",
+      "domain": "Narrative",
+      "description": "A key audit matter of the auditor's report: an area the auditors judged most significant, and what they did about it.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Title of the key audit matter as printed (Revenue recognition - unused tickets; Valuation of aircraft; Maintenance provisions)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "Why the auditors consider it a key matter",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "auditResponse",
+          "type": "String",
+          "description": "How the audit addressed the matter",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        },
+        {
+          "name": "auditor",
+          "target": "Auditor",
+          "cardinality": "ManyToOne",
+          "description": "The audit firm that reports the matter"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Key audit matters are in the independent auditor's report on the consolidated statements ('Key audit matters', 'Points clés de l'audit', 'Besonders wichtige Prüfungssachverhalte'). One entity per titled matter. Matters of the parent company's separate statements are not extracted. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "narrative"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Outlook",
+      "domain": "Narrative",
+      "description": "A forward-looking statement or target given by management: guidance for the next year or a medium-term objective.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "What the statement is about and for which horizon (Capacity 2026; Operating margin medium term; Net debt / EBITDA 2028)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "statement",
+          "type": "String",
+          "description": "The statement as written",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "targetPeriod",
+          "type": "String",
+          "description": "Period or horizon the statement is for (2026, 2026-2028, medium term)",
+          "nullable": true
+        },
+        {
+          "name": "metricAsPrinted",
+          "type": "String",
+          "description": "The measure the target is expressed in, as printed",
+          "nullable": true
+        },
+        {
+          "name": "targetLow",
+          "type": "Double",
+          "description": "Lower bound of the target, or the single target value",
+          "nullable": true
+        },
+        {
+          "name": "targetHigh",
+          "type": "Double",
+          "description": "Upper bound of the target when a range is given",
+          "nullable": true
+        },
+        {
+          "name": "unit",
+          "type": "String",
+          "description": "Unit of the target (%, EUR billion, x)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Guidance is in 'Outlook', 'Forecast', 'Perspectives', 'Prognosebericht' and in the letter of the chief executive. One entity per measure for which a target or direction is given. Past targets recalled to compare them with the results are not extracted. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "narrative"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GroupCompany",
+      "domain": "Structure",
+      "description": "A company in which a group holds an interest: subsidiary, joint venture, associate. One node per company, shared by all reports.",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "String",
+          "description": "Name of the company as printed in the list of group companies (Transavia France, Lufthansa Technik AG, Aer Lingus Limited)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "country",
+          "type": "String",
+          "description": "Country of incorporation or registered office",
+          "nullable": true
+        },
+        {
+          "name": "activity",
+          "type": "String",
+          "description": "Main activity of the company",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "parentGroup",
+          "target": "ReportingEntity",
+          "cardinality": "ManyToOne",
+          "description": "The group that holds the interest"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagMatch",
+              "valueAsString": "fuzzy"
+            },
+            {
+              "stereotypeProperty": "graphRagFuzzyThreshold",
+              "valueAsString": "0.92"
+            },
+            {
+              "stereotypeProperty": "graphRagReviewBand",
+              "valueAsString": "0.80"
+            },
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Companies are listed in the note 'Scope of consolidation', 'Group companies', 'Principal subsidiaries', 'Périmètre de consolidation', 'Anteilsbesitz'. Keep the legal form in the name as printed. The parent company itself is the ReportingEntity, not a GroupCompany. When the list has more than fifty companies, extract the principal subsidiaries, the joint ventures and the associates."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "structure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OwnershipInterest",
+      "domain": "Structure",
+      "description": "The interest a group holds in one company at the date of one report: percentage and consolidation method.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Name of the company held, as printed in the list of group companies",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ownershipPct",
+          "type": "Double",
+          "description": "Share of capital held, in percent",
+          "nullable": true
+        },
+        {
+          "name": "votingRightsPct",
+          "type": "Double",
+          "description": "Share of voting rights, in percent, when it differs or is printed",
+          "nullable": true
+        },
+        {
+          "name": "changeInYear",
+          "type": "String",
+          "description": "Change during the year, when stated (acquired, sold, increased from 50% to 100%, newly consolidated)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        },
+        {
+          "name": "company",
+          "target": "GroupCompany",
+          "cardinality": "ManyToOne",
+          "description": "The company held"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "consolidationMethod",
+          "target": "ConsolidationMethod",
+          "description": "How the company is included in the consolidated statements"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "One entity per line of the list of group companies that is extracted as a GroupCompany, with the percentages of that line. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "structure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RelatedPartyTransaction",
+      "domain": "Structure",
+      "description": "A transaction or balance with a related party: a shareholder with significant influence, a state, a joint venture, an associate, key management.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Related party and nature of the transaction (French State - shareholder loan; Joint ventures - sales of services; Key management - remuneration)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "relatedParty",
+          "type": "String",
+          "description": "Name of the related party",
+          "nullable": true
+        },
+        {
+          "name": "relationship",
+          "type": "String",
+          "description": "Why it is a related party (shareholder holding 28%, joint venture, associate, director)",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "The transaction or balance as described",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "Double",
+          "description": "Amount of the transaction for the period or of the balance at the end of the period (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Related parties are in the note 'Related parties', 'Parties liées', 'Related party transactions'. One entity per party and nature of transaction. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "structure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SignificantEvent",
+      "domain": "Structure",
+      "description": "An event that changes how the figures read: acquisition, disposal, restatement, change of accounting policy, capital operation, refinancing, impairment, event after the reporting date.",
+      "attributes": [
+        {
+          "name": "issuer",
+          "type": "String",
+          "description": "Short commercial name of the group that publishes the report, as on the cover, without legal form",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "1"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reportYear",
+          "type": "String",
+          "description": "Four-digit year in which the financial year of the report ends, e.g. 2025",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "2"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "trim"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "description": "Short name of the event (Acquisition of 19.9% of SAS; Sale of catering business; Restatement for IFRS 17; Capital increase June 2025)",
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagIdentity",
+              "stereotypePropertyInstances": [
+                {
+                  "stereotypeProperty": "graphRagIdentityOrder",
+                  "valueAsString": "3"
+                },
+                {
+                  "stereotypeProperty": "graphRagNormalise",
+                  "valueAsString": "casefold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "eventDate",
+          "type": "Date",
+          "description": "Date of the event, or of its completion",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "The event as described: what happened, with whom, on what terms",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        },
+        {
+          "name": "counterparty",
+          "type": "String",
+          "description": "The other party, when there is one",
+          "nullable": true
+        },
+        {
+          "name": "amount",
+          "type": "Double",
+          "description": "Price paid or received, or amount of the operation (as printed, not multiplied by the scale; negative when printed in brackets or with a minus sign)",
+          "nullable": true
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "description": "ISO 4217 code of the currency of the amounts (EUR, GBP, USD)",
+          "nullable": true
+        },
+        {
+          "name": "financialImpact",
+          "type": "String",
+          "description": "Effect on the statements as stated: gain or loss, effect on equity, lines restated and by how much",
+          "nullable": true,
+          "stereotypeInstances": [
+            {
+              "modelStereotype": "GraphRagEmbed",
+              "stereotypePropertyInstances": []
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "name": "report",
+          "target": "FinancialReport",
+          "cardinality": "ManyToOne",
+          "description": "The report that states this fact (same issuer and reportYear)"
+        },
+        {
+          "name": "company",
+          "target": "GroupCompany",
+          "cardinality": "ManyToOne",
+          "description": "The company acquired, sold or concerned, when the event is about one"
+        }
+      ],
+      "enumerationRelations": [
+        {
+          "name": "eventType",
+          "target": "EventType",
+          "description": "Kind of event"
+        },
+        {
+          "name": "scale",
+          "target": "AmountScale",
+          "description": "Scale of the amounts, read from the table header ('in EUR million', '£ million', 'in thousands')"
+        }
+      ],
+      "stereotypeInstances": [
+        {
+          "modelStereotype": "GraphRagEntity",
+          "stereotypePropertyInstances": [
+            {
+              "stereotypeProperty": "graphRagAnchor",
+              "valueAsString": "false"
+            },
+            {
+              "stereotypeProperty": "graphRagExtractionHints",
+              "valueAsString": "Events are in the notes 'Significant events', 'Changes in the scope of consolidation', 'Restatement of comparative information', 'Changes in accounting policies', 'Events after the reporting period', 'Faits marquants'. A restatement is extracted once as an event, with the lines affected in financialImpact; the restated figures themselves are ReportedValue with isRestated true. Key of the entity: 'issuer' and 'reportYear' are those of the report being read and are identical on every entity extracted from it. 'issuer' is the group's short commercial name as on the cover, without legal form (Air France-KLM, Lufthansa Group, IAG, Ryanair, easyJet), always spelled the same way. 'reportYear' is the four-digit year in which the financial year of the report ends (2025), never the year of a comparative figure. They are usually printed in the page header or footer."
+            },
+            {
+              "stereotypeProperty": "graphRagGroup",
+              "valueAsString": "structure"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enumerations": [
+    {
+      "name": "ReportType",
+      "domain": "Statements",
+      "description": "Kind of report",
+      "values": [
+        {
+          "value": "ANNUAL_REPORT",
+          "description": "Annual report or annual report and accounts"
+        },
+        {
+          "value": "UNIVERSAL_REGISTRATION_DOCUMENT",
+          "description": "Universal registration document including the annual financial report (document d'enregistrement universel)"
+        },
+        {
+          "value": "HALF_YEAR_REPORT",
+          "description": "Half-year or interim financial report"
+        },
+        {
+          "value": "FORM_10K",
+          "description": "Annual report on Form 10-K filed with the US SEC"
+        },
+        {
+          "value": "FORM_20F",
+          "description": "Annual report on Form 20-F filed with the US SEC by a foreign issuer"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another kind of financial report"
+        }
+      ]
+    },
+    {
+      "name": "AccountingFramework",
+      "domain": "Statements",
+      "description": "Accounting standards of the consolidated statements",
+      "values": [
+        {
+          "value": "IFRS",
+          "description": "International Financial Reporting Standards, including IFRS as adopted by the EU or the UK"
+        },
+        {
+          "value": "US_GAAP",
+          "description": "United States generally accepted accounting principles"
+        },
+        {
+          "value": "LOCAL_GAAP",
+          "description": "National standards (French GAAP, HGB, UK GAAP)"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another framework"
+        }
+      ]
+    },
+    {
+      "name": "AuditOpinion",
+      "domain": "Statements",
+      "description": "Opinion of the auditors on the consolidated statements",
+      "values": [
+        {
+          "value": "UNQUALIFIED",
+          "description": "Unmodified opinion: the statements give a true and fair view"
+        },
+        {
+          "value": "QUALIFIED",
+          "description": "Opinion with a qualification"
+        },
+        {
+          "value": "ADVERSE",
+          "description": "Adverse opinion"
+        },
+        {
+          "value": "DISCLAIMER",
+          "description": "The auditors do not express an opinion"
+        },
+        {
+          "value": "NOT_AUDITED",
+          "description": "The statements are not audited, or only reviewed (half-year)"
+        }
+      ]
+    },
+    {
+      "name": "SegmentType",
+      "domain": "Statements",
+      "description": "Kind of segment",
+      "values": [
+        {
+          "value": "BUSINESS",
+          "description": "Business or operating segment"
+        },
+        {
+          "value": "GEOGRAPHIC",
+          "description": "Geographical area"
+        }
+      ]
+    },
+    {
+      "name": "AmountScale",
+      "domain": "Statements",
+      "description": "Scale in which amounts are printed",
+      "values": [
+        {
+          "value": "UNITS",
+          "description": "Amounts in single currency units"
+        },
+        {
+          "value": "THOUSANDS",
+          "description": "Amounts in thousands"
+        },
+        {
+          "value": "MILLIONS",
+          "description": "Amounts in millions"
+        },
+        {
+          "value": "BILLIONS",
+          "description": "Amounts in billions"
+        }
+      ]
+    },
+    {
+      "name": "ValueKind",
+      "domain": "Statements",
+      "description": "Kind of number",
+      "values": [
+        {
+          "value": "MONETARY",
+          "description": "An amount of money"
+        },
+        {
+          "value": "PER_SHARE",
+          "description": "An amount per share"
+        },
+        {
+          "value": "PERCENTAGE",
+          "description": "A percentage or margin"
+        },
+        {
+          "value": "RATIO",
+          "description": "A ratio or multiple (2.1x)"
+        },
+        {
+          "value": "COUNT",
+          "description": "A number of people or things (employees, aircraft)"
+        },
+        {
+          "value": "OPERATING_VOLUME",
+          "description": "A volume of activity (passengers, seat-kilometres, tonnes)"
+        }
+      ]
+    },
+    {
+      "name": "StatementKind",
+      "domain": "Statements",
+      "description": "Where a figure is printed",
+      "values": [
+        {
+          "value": "KEY_FIGURES",
+          "description": "Key figures or highlights table"
+        },
+        {
+          "value": "INCOME_STATEMENT",
+          "description": "Income statement or statement of comprehensive income"
+        },
+        {
+          "value": "BALANCE_SHEET",
+          "description": "Balance sheet or statement of financial position"
+        },
+        {
+          "value": "CASH_FLOW_STATEMENT",
+          "description": "Cash flow statement"
+        },
+        {
+          "value": "EQUITY_STATEMENT",
+          "description": "Statement of changes in equity"
+        },
+        {
+          "value": "SEGMENT_NOTE",
+          "description": "Segment reporting note"
+        },
+        {
+          "value": "OTHER_NOTE",
+          "description": "Another note to the statements"
+        },
+        {
+          "value": "MANAGEMENT_REPORT",
+          "description": "Management report or business review"
+        }
+      ]
+    },
+    {
+      "name": "StandardMetric",
+      "domain": "Statements",
+      "description": "Common vocabulary of measures, for comparing groups",
+      "values": [
+        {
+          "value": "REVENUE",
+          "description": "Total revenue, turnover"
+        },
+        {
+          "value": "EBITDA",
+          "description": "Earnings before interest, tax, depreciation and amortisation, as reported"
+        },
+        {
+          "value": "OPERATING_RESULT",
+          "description": "Operating profit or loss, EBIT, as in the income statement"
+        },
+        {
+          "value": "ADJUSTED_OPERATING_RESULT",
+          "description": "Operating result as adjusted by the group (adjusted EBIT, operating profit before exceptional items)"
+        },
+        {
+          "value": "NET_FINANCE_COST",
+          "description": "Net financial result or net finance cost"
+        },
+        {
+          "value": "RESULT_BEFORE_TAX",
+          "description": "Profit or loss before tax"
+        },
+        {
+          "value": "INCOME_TAX",
+          "description": "Income tax expense or credit"
+        },
+        {
+          "value": "NET_RESULT",
+          "description": "Profit or loss for the period, all shareholders"
+        },
+        {
+          "value": "NET_RESULT_GROUP_SHARE",
+          "description": "Profit or loss attributable to the shareholders of the parent"
+        },
+        {
+          "value": "EARNINGS_PER_SHARE",
+          "description": "Basic earnings per share"
+        },
+        {
+          "value": "DILUTED_EARNINGS_PER_SHARE",
+          "description": "Diluted earnings per share"
+        },
+        {
+          "value": "DIVIDEND_PER_SHARE",
+          "description": "Dividend per share proposed or paid for the period"
+        },
+        {
+          "value": "STAFF_COSTS",
+          "description": "Employee or staff costs"
+        },
+        {
+          "value": "FUEL_COSTS",
+          "description": "Fuel costs"
+        },
+        {
+          "value": "DEPRECIATION_AMORTISATION",
+          "description": "Depreciation, amortisation and impairment"
+        },
+        {
+          "value": "TOTAL_ASSETS",
+          "description": "Total assets"
+        },
+        {
+          "value": "TOTAL_EQUITY",
+          "description": "Total equity, minority interests included"
+        },
+        {
+          "value": "CASH_AND_EQUIVALENTS",
+          "description": "Cash and cash equivalents"
+        },
+        {
+          "value": "LIQUIDITY",
+          "description": "Available liquidity as the group defines it: cash, deposits and undrawn facilities"
+        },
+        {
+          "value": "GROSS_FINANCIAL_DEBT",
+          "description": "Financial debt before deduction of cash, lease liabilities excluded unless the group includes them"
+        },
+        {
+          "value": "LEASE_LIABILITIES",
+          "description": "Lease liabilities"
+        },
+        {
+          "value": "NET_DEBT",
+          "description": "Net debt as the group defines it"
+        },
+        {
+          "value": "NET_DEBT_TO_EBITDA",
+          "description": "Net debt to EBITDA ratio as the group reports it"
+        },
+        {
+          "value": "PENSION_OBLIGATIONS",
+          "description": "Net pension liability or provisions for pensions"
+        },
+        {
+          "value": "TOTAL_PROVISIONS",
+          "description": "Total provisions"
+        },
+        {
+          "value": "OPERATING_CASH_FLOW",
+          "description": "Net cash from operating activities"
+        },
+        {
+          "value": "CAPITAL_EXPENDITURE",
+          "description": "Capital expenditure, purchases of tangible and intangible assets"
+        },
+        {
+          "value": "FREE_CASH_FLOW",
+          "description": "Free cash flow as the group defines it"
+        },
+        {
+          "value": "EMPLOYEES",
+          "description": "Number of employees, average or at the end of the period"
+        },
+        {
+          "value": "PASSENGERS",
+          "description": "Number of passengers carried"
+        },
+        {
+          "value": "CAPACITY",
+          "description": "Capacity offered (available seat-kilometres, ASK)"
+        },
+        {
+          "value": "LOAD_FACTOR",
+          "description": "Passenger load factor"
+        },
+        {
+          "value": "UNIT_REVENUE",
+          "description": "Revenue per unit of capacity or per passenger (RASK, revenue per seat)"
+        },
+        {
+          "value": "UNIT_COST",
+          "description": "Cost per unit of capacity (CASK, cost per seat), with or without fuel as printed"
+        },
+        {
+          "value": "FLEET_SIZE",
+          "description": "Number of aircraft in the fleet"
+        },
+        {
+          "value": "OTHER",
+          "description": "A measure that fits none of the literals; the caption is in metricAsPrinted"
+        }
+      ]
+    },
+    {
+      "name": "BorrowingType",
+      "domain": "Financing",
+      "description": "Kind of borrowing",
+      "values": [
+        {
+          "value": "BOND",
+          "description": "Bond, notes, private placement"
+        },
+        {
+          "value": "CONVERTIBLE_BOND",
+          "description": "Bond convertible or exchangeable into shares"
+        },
+        {
+          "value": "HYBRID_BOND",
+          "description": "Perpetual or deeply subordinated bond, whether booked in equity or debt"
+        },
+        {
+          "value": "BANK_LOAN",
+          "description": "Term loan from banks"
+        },
+        {
+          "value": "REVOLVING_CREDIT_FACILITY",
+          "description": "Revolving or standby credit facility, drawn or not"
+        },
+        {
+          "value": "STATE_BACKED_LOAN",
+          "description": "Loan from a state or guaranteed by a state"
+        },
+        {
+          "value": "ASSET_BACKED_FINANCING",
+          "description": "Financing secured on assets (aircraft financing, sale and leaseback financing, securitisation)"
+        },
+        {
+          "value": "COMMERCIAL_PAPER",
+          "description": "Commercial paper or other short-term notes"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another kind of borrowing"
+        }
+      ]
+    },
+    {
+      "name": "InterestRateType",
+      "domain": "Financing",
+      "description": "Kind of interest rate",
+      "values": [
+        {
+          "value": "FIXED",
+          "description": "Fixed rate"
+        },
+        {
+          "value": "FLOATING",
+          "description": "Floating rate"
+        },
+        {
+          "value": "MIXED",
+          "description": "Partly fixed, partly floating"
+        },
+        {
+          "value": "ZERO_COUPON",
+          "description": "No coupon"
+        }
+      ]
+    },
+    {
+      "name": "CovenantStatus",
+      "domain": "Financing",
+      "description": "Whether a covenant was met",
+      "values": [
+        {
+          "value": "COMPLIED",
+          "description": "The group states the covenant was met"
+        },
+        {
+          "value": "BREACHED",
+          "description": "The covenant was not met"
+        },
+        {
+          "value": "WAIVED",
+          "description": "A waiver or suspension was obtained"
+        },
+        {
+          "value": "NOT_STATED",
+          "description": "The report does not say"
+        }
+      ]
+    },
+    {
+      "name": "CommitmentType",
+      "domain": "Financing",
+      "description": "Kind of commitment",
+      "values": [
+        {
+          "value": "ASSET_PURCHASE_ORDER",
+          "description": "Firm order of assets (aircraft, engines, ships, equipment)"
+        },
+        {
+          "value": "CAPITAL_EXPENDITURE",
+          "description": "Other capital expenditure commitment"
+        },
+        {
+          "value": "LEASE_NOT_YET_COMMENCED",
+          "description": "Lease signed whose term has not started"
+        },
+        {
+          "value": "GUARANTEE_GIVEN",
+          "description": "Guarantee or surety given to a third party"
+        },
+        {
+          "value": "PLEDGED_ASSET",
+          "description": "Asset pledged or mortgaged as security"
+        },
+        {
+          "value": "PURCHASE_OBLIGATION",
+          "description": "Obligation to buy goods or services"
+        },
+        {
+          "value": "CONTINGENT_LIABILITY",
+          "description": "Contingent liability that is not a legal proceeding"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another kind of commitment"
+        }
+      ]
+    },
+    {
+      "name": "ProvisionType",
+      "domain": "Financing",
+      "description": "Kind of provision",
+      "values": [
+        {
+          "value": "PENSION",
+          "description": "Pensions and other post-employment benefits"
+        },
+        {
+          "value": "RESTRUCTURING",
+          "description": "Restructuring"
+        },
+        {
+          "value": "MAINTENANCE_AND_RETURN",
+          "description": "Maintenance and return of leased assets"
+        },
+        {
+          "value": "LITIGATION",
+          "description": "Legal and tax proceedings"
+        },
+        {
+          "value": "ENVIRONMENTAL",
+          "description": "Environmental obligations, emission allowances"
+        },
+        {
+          "value": "ONEROUS_CONTRACT",
+          "description": "Onerous contracts"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another kind of provision"
+        }
+      ]
+    },
+    {
+      "name": "RiskCategory",
+      "domain": "Narrative",
+      "description": "Kind of risk",
+      "values": [
+        {
+          "value": "STRATEGIC",
+          "description": "Strategy, competition, market position"
+        },
+        {
+          "value": "OPERATIONAL",
+          "description": "Operations, safety, suppliers, infrastructure"
+        },
+        {
+          "value": "FINANCIAL",
+          "description": "Financing, liquidity, credit, counterparties"
+        },
+        {
+          "value": "MARKET",
+          "description": "Prices and rates: fuel, currencies, interest rates"
+        },
+        {
+          "value": "REGULATORY_LEGAL",
+          "description": "Regulation, compliance, legal proceedings"
+        },
+        {
+          "value": "CLIMATE_ENVIRONMENT",
+          "description": "Climate change and environmental regulation"
+        },
+        {
+          "value": "CYBER_IT",
+          "description": "Information systems and cyber security"
+        },
+        {
+          "value": "GEOPOLITICAL",
+          "description": "Conflicts, sanctions, political instability, pandemics"
+        },
+        {
+          "value": "HUMAN_RESOURCES",
+          "description": "Labour relations, strikes, skills"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another kind of risk"
+        }
+      ]
+    },
+    {
+      "name": "RiskTrend",
+      "domain": "Narrative",
+      "description": "Movement of a risk since the previous year, as the report states it",
+      "values": [
+        {
+          "value": "INCREASING",
+          "description": "The report says the risk increased"
+        },
+        {
+          "value": "STABLE",
+          "description": "The report says the risk is unchanged"
+        },
+        {
+          "value": "DECREASING",
+          "description": "The report says the risk decreased"
+        },
+        {
+          "value": "NEW",
+          "description": "The report presents the risk as new"
+        }
+      ]
+    },
+    {
+      "name": "LitigationStatus",
+      "domain": "Narrative",
+      "description": "Stage of a proceeding",
+      "values": [
+        {
+          "value": "ONGOING",
+          "description": "Pending, no final decision"
+        },
+        {
+          "value": "UNDER_APPEAL",
+          "description": "A decision was given and is under appeal"
+        },
+        {
+          "value": "SETTLED",
+          "description": "Ended by a settlement"
+        },
+        {
+          "value": "CLOSED_FAVOURABLE",
+          "description": "Ended in favour of the group"
+        },
+        {
+          "value": "CLOSED_UNFAVOURABLE",
+          "description": "Ended against the group"
+        }
+      ]
+    },
+    {
+      "name": "ConsolidationMethod",
+      "domain": "Structure",
+      "description": "How a company is included in the consolidated statements",
+      "values": [
+        {
+          "value": "FULL_CONSOLIDATION",
+          "description": "Subsidiary, fully consolidated"
+        },
+        {
+          "value": "EQUITY_METHOD",
+          "description": "Associate or joint venture accounted for by the equity method"
+        },
+        {
+          "value": "JOINT_OPERATION",
+          "description": "Joint operation, share of assets and liabilities recognised"
+        },
+        {
+          "value": "NOT_CONSOLIDATED",
+          "description": "Investment not consolidated"
+        }
+      ]
+    },
+    {
+      "name": "EventType",
+      "domain": "Structure",
+      "description": "Kind of significant event",
+      "values": [
+        {
+          "value": "ACQUISITION",
+          "description": "Acquisition of a company, a stake or a business"
+        },
+        {
+          "value": "DISPOSAL",
+          "description": "Sale of a company, a stake or a business"
+        },
+        {
+          "value": "RESTATEMENT",
+          "description": "Restatement or re-presentation of comparative figures"
+        },
+        {
+          "value": "CHANGE_IN_ACCOUNTING_POLICY",
+          "description": "New standard applied or change of accounting policy"
+        },
+        {
+          "value": "CAPITAL_OPERATION",
+          "description": "Capital increase, share buyback, dividend decision"
+        },
+        {
+          "value": "REFINANCING",
+          "description": "New financing, early repayment, renegotiation of debt"
+        },
+        {
+          "value": "RESTRUCTURING",
+          "description": "Restructuring plan"
+        },
+        {
+          "value": "IMPAIRMENT",
+          "description": "Significant impairment or reversal"
+        },
+        {
+          "value": "SUBSEQUENT_EVENT",
+          "description": "Event after the reporting date"
+        },
+        {
+          "value": "OTHER",
+          "description": "Another significant event"
+        }
+      ]
+    }
+  ]
+}

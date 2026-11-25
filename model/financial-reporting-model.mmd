@@ -1,0 +1,428 @@
+classDiagram
+  direction LR
+  namespace Financing {
+    class Borrowing {
+      *String issuer
+      *String reportYear
+      *String label
+      +String borrower
+      +Double nominalAmount
+      +Double drawnAmount
+      +Double carryingAmount
+      +String currency
+      +Double couponRatePct
+      +String referenceRate
+      +Date issueDate
+      +Date maturityDate
+      +Boolean isSecured
+      +String security
+      +String terms
+    }
+    class Covenant {
+      *String issuer
+      *String reportYear
+      *String label
+      +String definition
+      +String facility
+      +String requiredLevel
+      +Double requiredValue
+      +String actualLevel
+      +Double actualValue
+      +Date testDate
+      +String consequence
+    }
+    class DebtMaturity {
+      *String issuer
+      *String reportYear
+      *String label
+      +String liabilityKind
+      +String timeBand
+      +Date balanceDate
+      +Double amount
+      +String currency
+      +Boolean isUndiscounted
+    }
+    class Commitment {
+      *String issuer
+      *String reportYear
+      *String label
+      +String description
+      +String counterparty
+      +Double amount
+      +String currency
+      +Double quantity
+      +String schedule
+    }
+    class Provision {
+      *String issuer
+      *String reportYear
+      *String label
+      +String description
+      +Double openingAmount
+      +Double additions
+      +Double utilisations
+      +Double reversals
+      +Double closingAmount
+      +String currency
+    }
+    class BorrowingType {
+      <<enumeration>>
+      BOND
+      CONVERTIBLE_BOND
+      HYBRID_BOND
+      BANK_LOAN
+      REVOLVING_CREDIT_FACILITY
+      STATE_BACKED_LOAN
+      ASSET_BACKED_FINANCING
+      COMMERCIAL_PAPER
+      OTHER
+    }
+    class InterestRateType {
+      <<enumeration>>
+      FIXED
+      FLOATING
+      MIXED
+      ZERO_COUPON
+    }
+    class CovenantStatus {
+      <<enumeration>>
+      COMPLIED
+      BREACHED
+      WAIVED
+      NOT_STATED
+    }
+    class CommitmentType {
+      <<enumeration>>
+      ASSET_PURCHASE_ORDER
+      CAPITAL_EXPENDITURE
+      LEASE_NOT_YET_COMMENCED
+      GUARANTEE_GIVEN
+      PLEDGED_ASSET
+      PURCHASE_OBLIGATION
+      CONTINGENT_LIABILITY
+      OTHER
+    }
+    class ProvisionType {
+      <<enumeration>>
+      PENSION
+      RESTRUCTURING
+      MAINTENANCE_AND_RETURN
+      LITIGATION
+      ENVIRONMENTAL
+      ONEROUS_CONTRACT
+      OTHER
+    }
+  }
+  namespace Narrative {
+    class Auditor {
+      *String name
+      +String office
+    }
+    class RiskFactor {
+      *String issuer
+      *String reportYear
+      *String label
+      +String description
+      +String mitigation
+      +String assessment
+    }
+    class Litigation {
+      *String issuer
+      *String reportYear
+      *String label
+      +String description
+      +String counterparty
+      +String jurisdiction
+      +Double amountClaimed
+      +Double amountProvided
+      +String currency
+    }
+    class KeyAuditMatter {
+      *String issuer
+      *String reportYear
+      *String label
+      +String description
+      +String auditResponse
+    }
+    class Outlook {
+      *String issuer
+      *String reportYear
+      *String label
+      +String statement
+      +String targetPeriod
+      +String metricAsPrinted
+      +Double targetLow
+      +Double targetHigh
+      +String unit
+    }
+    class RiskCategory {
+      <<enumeration>>
+      STRATEGIC
+      OPERATIONAL
+      FINANCIAL
+      MARKET
+      REGULATORY_LEGAL
+      CLIMATE_ENVIRONMENT
+      CYBER_IT
+      GEOPOLITICAL
+      HUMAN_RESOURCES
+      OTHER
+    }
+    class RiskTrend {
+      <<enumeration>>
+      INCREASING
+      STABLE
+      DECREASING
+      NEW
+    }
+    class LitigationStatus {
+      <<enumeration>>
+      ONGOING
+      UNDER_APPEAL
+      SETTLED
+      CLOSED_FAVOURABLE
+      CLOSED_UNFAVOURABLE
+    }
+  }
+  namespace Statements {
+    class ReportingEntity {
+      *String name
+      +String legalName
+      +String countryOfIncorporation
+      +String headOffice
+      +String stockExchanges
+      +String tickerSymbol
+      +String lei
+      +String sector
+      +String businessDescription
+    }
+    class FinancialReport {
+      *String issuer
+      *String reportYear
+      +String title
+      +Date periodStartDate
+      +Date periodEndDate
+      +Date publicationDate
+      +String reportingCurrency
+      +String language
+      +Boolean isTranslation
+      +String filingReference
+    }
+    class Segment {
+      *String issuer
+      *String name
+      +String description
+    }
+    class ReportedValue {
+      *String issuer
+      *String reportYear
+      *String label
+      +String metricAsPrinted
+      +String period
+      +Date periodEndDate
+      +Double amount
+      +String currency
+      +String unit
+      +Boolean isComparative
+      +Boolean isRestated
+      +String restatementNote
+    }
+    class ReportType {
+      <<enumeration>>
+      ANNUAL_REPORT
+      UNIVERSAL_REGISTRATION_DOCUMENT
+      HALF_YEAR_REPORT
+      FORM_10K
+      FORM_20F
+      OTHER
+    }
+    class AccountingFramework {
+      <<enumeration>>
+      IFRS
+      US_GAAP
+      LOCAL_GAAP
+      OTHER
+    }
+    class AuditOpinion {
+      <<enumeration>>
+      UNQUALIFIED
+      QUALIFIED
+      ADVERSE
+      DISCLAIMER
+      NOT_AUDITED
+    }
+    class SegmentType {
+      <<enumeration>>
+      BUSINESS
+      GEOGRAPHIC
+    }
+    class AmountScale {
+      <<enumeration>>
+      UNITS
+      THOUSANDS
+      MILLIONS
+      BILLIONS
+    }
+    class ValueKind {
+      <<enumeration>>
+      MONETARY
+      PER_SHARE
+      PERCENTAGE
+      RATIO
+      COUNT
+      OPERATING_VOLUME
+    }
+    class StatementKind {
+      <<enumeration>>
+      KEY_FIGURES
+      INCOME_STATEMENT
+      BALANCE_SHEET
+      CASH_FLOW_STATEMENT
+      EQUITY_STATEMENT
+      SEGMENT_NOTE
+      OTHER_NOTE
+      MANAGEMENT_REPORT
+    }
+    class StandardMetric {
+      <<enumeration>>
+      REVENUE
+      EBITDA
+      OPERATING_RESULT
+      ADJUSTED_OPERATING_RESULT
+      NET_FINANCE_COST
+      RESULT_BEFORE_TAX
+      INCOME_TAX
+      NET_RESULT
+      NET_RESULT_GROUP_SHARE
+      EARNINGS_PER_SHARE
+      DILUTED_EARNINGS_PER_SHARE
+      DIVIDEND_PER_SHARE
+      STAFF_COSTS
+      FUEL_COSTS
+      DEPRECIATION_AMORTISATION
+      TOTAL_ASSETS
+      TOTAL_EQUITY
+      CASH_AND_EQUIVALENTS
+      LIQUIDITY
+      GROSS_FINANCIAL_DEBT
+      LEASE_LIABILITIES
+      NET_DEBT
+      NET_DEBT_TO_EBITDA
+      PENSION_OBLIGATIONS
+      TOTAL_PROVISIONS
+      OPERATING_CASH_FLOW
+      CAPITAL_EXPENDITURE
+      FREE_CASH_FLOW
+      EMPLOYEES
+      PASSENGERS
+      CAPACITY
+      LOAD_FACTOR
+      UNIT_REVENUE
+      UNIT_COST
+      FLEET_SIZE
+      OTHER
+    }
+  }
+  namespace Structure {
+    class GroupCompany {
+      *String name
+      +String country
+      +String activity
+    }
+    class OwnershipInterest {
+      *String issuer
+      *String reportYear
+      *String label
+      +Double ownershipPct
+      +Double votingRightsPct
+      +String changeInYear
+    }
+    class RelatedPartyTransaction {
+      *String issuer
+      *String reportYear
+      *String label
+      +String relatedParty
+      +String relationship
+      +String description
+      +Double amount
+      +String currency
+    }
+    class SignificantEvent {
+      *String issuer
+      *String reportYear
+      *String label
+      +Date eventDate
+      +String description
+      +String counterparty
+      +Double amount
+      +String currency
+      +String financialImpact
+    }
+    class ConsolidationMethod {
+      <<enumeration>>
+      FULL_CONSOLIDATION
+      EQUITY_METHOD
+      JOINT_OPERATION
+      NOT_CONSOLIDATED
+    }
+    class EventType {
+      <<enumeration>>
+      ACQUISITION
+      DISPOSAL
+      RESTATEMENT
+      CHANGE_IN_ACCOUNTING_POLICY
+      CAPITAL_OPERATION
+      REFINANCING
+      RESTRUCTURING
+      IMPAIRMENT
+      SUBSEQUENT_EVENT
+      OTHER
+    }
+  }
+  FinancialReport --> "1" ReportingEntity : reportingEntity (ManyToOne)
+  FinancialReport --> "*" Auditor : auditors (ManyToMany)
+  FinancialReport --> "1" ReportType : reportType
+  FinancialReport --> "1" AccountingFramework : accountingFramework
+  FinancialReport --> "1" AuditOpinion : auditOpinion
+  Segment --> "1" ReportingEntity : reportingEntity (ManyToOne)
+  Segment --> "1" SegmentType : segmentType
+  ReportedValue --> "1" FinancialReport : report (ManyToOne)
+  ReportedValue --> "1" Segment : segment (ManyToOne)
+  ReportedValue --> "1" StandardMetric : standardMetric
+  ReportedValue --> "1" ValueKind : valueKind
+  ReportedValue --> "1" StatementKind : statement
+  ReportedValue --> "1" AmountScale : scale
+  Borrowing --> "1" FinancialReport : report (ManyToOne)
+  Borrowing --> "1" BorrowingType : borrowingType
+  Borrowing --> "1" InterestRateType : interestRateType
+  Borrowing --> "1" AmountScale : scale
+  Covenant --> "1" FinancialReport : report (ManyToOne)
+  Covenant --> "1" CovenantStatus : status
+  DebtMaturity --> "1" FinancialReport : report (ManyToOne)
+  DebtMaturity --> "1" AmountScale : scale
+  Commitment --> "1" FinancialReport : report (ManyToOne)
+  Commitment --> "1" CommitmentType : commitmentType
+  Commitment --> "1" AmountScale : scale
+  Provision --> "1" FinancialReport : report (ManyToOne)
+  Provision --> "1" ProvisionType : provisionType
+  Provision --> "1" AmountScale : scale
+  RiskFactor --> "1" FinancialReport : report (ManyToOne)
+  RiskFactor --> "1" RiskCategory : category
+  RiskFactor --> "1" RiskTrend : trend
+  Litigation --> "1" FinancialReport : report (ManyToOne)
+  Litigation --> "1" LitigationStatus : status
+  Litigation --> "1" AmountScale : scale
+  KeyAuditMatter --> "1" FinancialReport : report (ManyToOne)
+  KeyAuditMatter --> "1" Auditor : auditor (ManyToOne)
+  Outlook --> "1" FinancialReport : report (ManyToOne)
+  GroupCompany --> "1" ReportingEntity : parentGroup (ManyToOne)
+  OwnershipInterest --> "1" FinancialReport : report (ManyToOne)
+  OwnershipInterest --> "1" GroupCompany : company (ManyToOne)
+  OwnershipInterest --> "1" ConsolidationMethod : consolidationMethod
+  RelatedPartyTransaction --> "1" FinancialReport : report (ManyToOne)
+  RelatedPartyTransaction --> "1" AmountScale : scale
+  SignificantEvent --> "1" FinancialReport : report (ManyToOne)
+  SignificantEvent --> "1" GroupCompany : company (ManyToOne)
+  SignificantEvent --> "1" EventType : eventType
+  SignificantEvent --> "1" AmountScale : scale
+

@@ -1,0 +1,16 @@
+# Secrets and runtime state — never committed
+.env
+data/
+backups/
+
+# Public annual reports fetched by scripts/fetch-reports: third-party documents, never committed
+samples/real-reports/downloads/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Raw ingestion statistics pulled from the server (contain account e-mails): summarised in the README, never committed
+.stats/
